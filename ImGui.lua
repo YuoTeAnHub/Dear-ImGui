@@ -1549,6 +1549,25 @@ function ImGui:CreateWindow(WindowConfig)
 	end
 	WindowConfig:UpdateBody()
 
+	function WindowConfig:UpdateTabs()
+		local Template = ToolBar:FindFirstChild("TabButton")
+		local Layout = ToolBar:FindFirstChildOfClass("UIListLayout")
+		local Padding = Layout and Layout.Padding.Offset or 0
+		local Tabs = {}
+		for _, Child in next, ToolBar:GetChildren() do
+			if Child:IsA("GuiButton") and Child ~= Template then
+				table.insert(Tabs, Child)
+			end
+		end
+		local Count = #Tabs
+		if Count == 0 then return WindowConfig end
+		for _, Tab in next, Tabs do
+			Tab.AutomaticSize = Enum.AutomaticSize.None
+			Tab.Size = UDim2.new(1 / Count, -Padding, Tab.Size.Y.Scale, Tab.Size.Y.Offset)
+		end
+		return WindowConfig
+	end
+
 	--// Open/Close
 	WindowConfig.Open = true
 	function WindowConfig:SetOpen(Open: true, NoAnimation: false)
@@ -1629,6 +1648,9 @@ function ImGui:CreateWindow(WindowConfig)
 
 		--// Automatic sizes
 		self:UpdateBody()
+		if WindowConfig.StretchTabs then
+			self:UpdateTabs()
+		end
 		if WindowConfig.AutoSize then
 			Content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 				local Size = Config:GetContentSize()
