@@ -1552,20 +1552,26 @@ function ImGui:CreateWindow(WindowConfig)
 	function WindowConfig:UpdateTabs()
 		local Template = ToolBar:FindFirstChild("TabButton")
 		local Layout = ToolBar:FindFirstChildOfClass("UIListLayout")
+		local Padding = Layout and Layout.Padding.Offset or 0
 		if Layout then
 			Layout.FillDirection = Enum.FillDirection.Horizontal
-			pcall(function() Layout.HorizontalFlex = Enum.UIFlexAlignment.Fill end)
+			pcall(function() Layout.HorizontalFlex = Enum.UIFlexAlignment.None end)
 		end
 		if Template then
 			Template.Visible = false
-			local Flex = Template:FindFirstChildOfClass("UIFlexItem") or Instance.new("UIFlexItem")
-			pcall(function() Flex.FlexMode = Enum.UIFlexMode.None end)
-			Flex.Parent = Template
 		end
+		local Tabs = {}
 		for _, Child in next, ToolBar:GetChildren() do
 			if Child:IsA("GuiButton") and Child ~= Template then
-				pcall(function() Child.TextXAlignment = Enum.TextXAlignment.Center end)
+				table.insert(Tabs, Child)
 			end
+		end
+		local Count = #Tabs
+		if Count == 0 then return WindowConfig end
+		for _, Tab in next, Tabs do
+			Tab.AutomaticSize = Enum.AutomaticSize.Y
+			Tab.Size = UDim2.new(1 / Count, -Padding, 0, 0)
+			pcall(function() Tab.TextXAlignment = Enum.TextXAlignment.Center end)
 		end
 		return WindowConfig
 	end
